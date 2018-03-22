@@ -40,9 +40,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cmath>
 #include <cstdio>
 #include <stdint.h>
+
+#ifdef WIN32
+#include <rpc.h>
+#else
 extern "C" {
 #include <uuid/uuid.h>
 }
+#endif
 
 using namespace std;
 using namespace std::tr1;
@@ -54,7 +59,7 @@ namespace impl {
 
 void PrettyPrinter<Action, Action>::operator()(string& out, Action act) const
 {
-    switch(act) {
+    switch (act) {
     case kApi_CreateTable:
         out.append("CreateTable");
         break;
@@ -100,7 +105,7 @@ void PrettyPrinter<Action, Action>::operator()(string& out, Action act) const
 void PrettyPrinter<PrimaryKeyType, PrimaryKeyType>::operator()(
     string& out, PrimaryKeyType pkt) const
 {
-    switch(pkt) {
+    switch (pkt) {
     case kPKT_Integer:
         out.append("kPKT_Integer");
         break;
@@ -116,9 +121,9 @@ void PrettyPrinter<PrimaryKeyType, PrimaryKeyType>::operator()(
 void PrettyPrinter<
     PrimaryKeyColumnSchema::Option,
     PrimaryKeyColumnSchema::Option>::operator()(
-    string& out, PrimaryKeyColumnSchema::Option pko) const
+        string& out, PrimaryKeyColumnSchema::Option pko) const
 {
-    switch(pko) {
+    switch (pko) {
     case PrimaryKeyColumnSchema::AutoIncrement:
         out.append("AutoIncrement");
         break;
@@ -128,7 +133,7 @@ void PrettyPrinter<
 void PrettyPrinter<BloomFilterType, BloomFilterType>::operator()(
     string& out, BloomFilterType bft) const
 {
-    switch(bft) {
+    switch (bft) {
     case kBFT_None:
         out.append("kBFT_None");
         break;
@@ -145,7 +150,7 @@ void PrettyPrinter<
     PrimaryKeyValue::Category, PrimaryKeyValue::Category>::operator()
     (string& out, PrimaryKeyValue::Category cat) const
 {
-    switch(cat) {
+    switch (cat) {
     case PrimaryKeyValue::kNone:
         out.append("None");
         break;
@@ -173,7 +178,7 @@ void PrettyPrinter<
 void PrettyPrinter<CompareResult, CompareResult>::operator()(
     string& out, CompareResult cr) const
 {
-    switch(cr) {
+    switch (cr) {
     case kCR_Uncomparable:
         out.append("kCR_Uncomparable");
         break;
@@ -192,7 +197,7 @@ void PrettyPrinter<CompareResult, CompareResult>::operator()(
 void PrettyPrinter<TableStatus, TableStatus>::operator()(
     string& out, TableStatus ts) const
 {
-    switch(ts) {
+    switch (ts) {
     case kTS_Active:
         out.append("kTS_Active");
         break;
@@ -214,7 +219,7 @@ void PrettyPrinter<TableStatus, TableStatus>::operator()(
 void PrettyPrinter<RowChange::ReturnType, RowChange::ReturnType>::operator()(
     string& out, RowChange::ReturnType ts) const
 {
-    switch(ts) {
+    switch (ts) {
     case RowChange::kRT_None:
         out.append("kRT_None");
         break;
@@ -228,7 +233,7 @@ void PrettyPrinter<
     AttributeValue::Category, AttributeValue::Category>::operator()
     (string& out, AttributeValue::Category cat) const
 {
-    switch(cat) {
+    switch (cat) {
     case AttributeValue::kNone:
         out.append("None");
         break;
@@ -255,7 +260,7 @@ void PrettyPrinter<
     Condition::RowExistenceExpectation>::operator()
     (string& out, Condition::RowExistenceExpectation exp) const
 {
-    switch(exp) {
+    switch (exp) {
     case Condition::kIgnore:
         out.append("kIgnore");
         break;
@@ -273,7 +278,7 @@ void PrettyPrinter<
     SingleColumnCondition::Relation>::operator()
     (string& out, SingleColumnCondition::Relation exp) const
 {
-    switch(exp) {
+    switch (exp) {
     case SingleColumnCondition::kEqual:
         out.append("kEqual");
         break;
@@ -300,7 +305,7 @@ void PrettyPrinter<
     CompositeColumnCondition::Operator>::operator()
     (string& out, CompositeColumnCondition::Operator op) const
 {
-    switch(op) {
+    switch (op) {
     case CompositeColumnCondition::kNot:
         out.append("kNot");
         break;
@@ -314,9 +319,9 @@ void PrettyPrinter<
 }
 
 void PrettyPrinter<ColumnCondition::Type, ColumnCondition::Type>::operator()
-    (string& out, ColumnCondition::Type cct) const
+(string& out, ColumnCondition::Type cct) const
 {
-    switch(cct) {
+    switch (cct) {
     case ColumnCondition::kSingle:
         out.append("kSingle");
         break;
@@ -327,9 +332,9 @@ void PrettyPrinter<ColumnCondition::Type, ColumnCondition::Type>::operator()
 }
 
 void PrettyPrinter<RangeQueryCriterion::Direction, RangeQueryCriterion::Direction>::operator()
-    (string& out, RangeQueryCriterion::Direction dir) const
+(string& out, RangeQueryCriterion::Direction dir) const
 {
-    switch(dir) {
+    switch (dir) {
     case RangeQueryCriterion::FORWARD:
         out.append("FORWARD");
         break;
@@ -340,9 +345,9 @@ void PrettyPrinter<RangeQueryCriterion::Direction, RangeQueryCriterion::Directio
 }
 
 void PrettyPrinter<RowUpdateChange::Update::Type, RowUpdateChange::Update::Type>::operator()
-    (string& out, RowUpdateChange::Update::Type type) const
+(string& out, RowUpdateChange::Update::Type type) const
 {
-    switch(type) {
+    switch (type) {
     case RowUpdateChange::Update::kPut:
         out.append("kPut");
         break;
@@ -363,11 +368,13 @@ void PrettyPrinter<
         out.append("{\"Ok\":");
         if (!res.okValue().present()) {
             out.append("null}");
-        } else {
+        }
+        else {
             pp::prettyPrint(out, *res.okValue());
             out.push_back('}');
         }
-    } else {
+    }
+    else {
         out.append("{\"OTSError\":");
         pp::prettyPrint(out, res.errValue());
         out.push_back('}');
@@ -417,7 +424,7 @@ void collectEnum(deque<TableStatus>& xs)
 int64_t flagDefaultActors = 10;
 
 Endpoint::Endpoint(const string& endpoint, const string& inst)
-  : mEndpoint(endpoint),
+    : mEndpoint(endpoint),
     mInstanceName(inst)
 {}
 
@@ -548,24 +555,30 @@ Tracker Tracker::create()
 {
     static const char kCharset[] = "0123456789abcdef";
 
+#ifdef WIN32
+    UUID u = { 0 };
+    UuidCreate(&u);
+    const uint8_t *uuid = reinterpret_cast<const uint8_t *>(&u);
+#else
     uuid_t uuid;
     uuid_generate(uuid);
+#endif
 
     string str;
     str.reserve(37); // 16*2(char) + 4('-') + 1('\0')
-    for(int64_t i = 0; i < 16; ++i) {
+    for (int64_t i = 0; i < 16; ++i) {
         uint8_t low = static_cast<uint8_t>(uuid[i]) & 0xF;
-        uint8_t high = static_cast<uint8_t>(uuid[i]) >> 8;
+        uint8_t high = static_cast<uint8_t>(uuid[i]) >> 4;
         str.push_back(kCharset[high]);
         str.push_back(kCharset[low]);
-        switch(i) {
+        switch (i) {
         case 3: case 5: case 7: case 9: {
-            str.push_back('-');
-            break;
-        }
+                str.push_back('-');
+                break;
+            }
         default: {
-            // intend to do nothing
-        }
+                // intend to do nothing
+            }
         }
     }
 
@@ -623,11 +636,11 @@ void ClientOptions::reset()
     mRequestTimeout = Duration::fromSec(3);
 
     mRetryStrategy.reset(new DeadlineRetryStrategy(
-            shared_ptr<random::Random>(random::newDefault()),
-            Duration::fromSec(10)));
+        shared_ptr<random::Random>(random::newDefault()),
+        Duration::fromSec(10)));
 
     mActors.clear();
-    for(int64_t i = 0; i < 10; ++i) {
+    for (int64_t i = 0; i < 10; ++i) {
         mActors.push_back(shared_ptr<Actor>(new Actor()));
     }
 
@@ -758,7 +771,7 @@ Optional<OTSError> Schema::validate() const
         e.mutableMessage() = "Table schema must be nonempty.";
         return Optional<OTSError>(util::move(e));
     }
-    for(int64_t i = 0, sz = size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = size(); i < sz; ++i) {
         TRY((*this)[i].validate());
     }
     return Optional<OTSError>();
@@ -766,7 +779,7 @@ Optional<OTSError> Schema::validate() const
 
 PrimaryKeyType PrimaryKeyValue::toPrimaryKeyType(Category cat)
 {
-    switch(cat) {
+    switch (cat) {
     case kInteger: return kPKT_Integer;
     case kString: return kPKT_String;
     case kBinary: return kPKT_Binary;
@@ -778,12 +791,12 @@ PrimaryKeyType PrimaryKeyValue::toPrimaryKeyType(Category cat)
 
 
 PrimaryKeyValue::PrimaryKeyValue()
-  : mCategory(kNone),
+    : mCategory(kNone),
     mIntValue(0)
 {}
 
 PrimaryKeyValue::PrimaryKeyValue(const MoveHolder<PrimaryKeyValue>& a)
-  : mCategory(a->mCategory),
+    : mCategory(a->mCategory),
     mIntValue(a->mIntValue)
 {
     moveAssign(mStrBlobValue, util::move(a->mStrBlobValue));
@@ -804,7 +817,7 @@ PrimaryKeyValue::Category PrimaryKeyValue::category() const
 
 void PrimaryKeyValue::prettyPrint(string& out) const
 {
-    switch(category()) {
+    switch (category()) {
     case kNone:
         out.append("none");
         break;
@@ -854,26 +867,31 @@ CompareResult PrimaryKeyValue::compare(const PrimaryKeyValue& b) const
     if (category() == kInfMin) {
         if (b.category() == kInfMin) {
             return kCR_Uncomparable;
-        } else {
+        }
+        else {
             return kCR_Smaller;
         }
-    } else if (b.category() == kInfMin) {
+    }
+    else if (b.category() == kInfMin) {
         return kCR_Larger;
     }
 
     if (category() == kInfMax) {
         if (b.category() == kInfMax) {
             return kCR_Uncomparable;
-        } else {
+        }
+        else {
             return kCR_Larger;
         }
-    } else if (b.category() == kInfMax) {
+    }
+    else if (b.category() == kInfMax) {
         return kCR_Smaller;
     }
 
     if (category() == kAutoIncr) {
         return kCR_Uncomparable;
-    } else if (b.category() == kAutoIncr) {
+    }
+    else if (b.category() == kAutoIncr) {
         return kCR_Uncomparable;
     }
 
@@ -881,35 +899,41 @@ CompareResult PrimaryKeyValue::compare(const PrimaryKeyValue& b) const
         return kCR_Uncomparable;
     }
 
-    switch(category()) {
+    switch (category()) {
     case kInteger:
         if (integer() < b.integer()) {
             return kCR_Smaller;
-        } else if (integer() > b.integer()) {
+        }
+        else if (integer() > b.integer()) {
             return kCR_Larger;
-        } else {
+        }
+        else {
             return kCR_Equivalent;
         }
     case kString: {
-        int c = lexicographicOrder(MemPiece::from(str()), MemPiece::from(b.str()));
-        if (c < 0) {
-            return kCR_Smaller;
-        } else if (c > 0) {
-            return kCR_Larger;
-        } else {
-            return kCR_Equivalent;
+            int c = lexicographicOrder(MemPiece::from(str()), MemPiece::from(b.str()));
+            if (c < 0) {
+                return kCR_Smaller;
+            }
+            else if (c > 0) {
+                return kCR_Larger;
+            }
+            else {
+                return kCR_Equivalent;
+            }
         }
-    }
     case kBinary: {
-        int c = lexicographicOrder(MemPiece::from(blob()), MemPiece::from(b.blob()));
-        if (c < 0) {
-            return kCR_Smaller;
-        } else if (c > 0) {
-            return kCR_Larger;
-        } else {
-            return kCR_Equivalent;
+            int c = lexicographicOrder(MemPiece::from(blob()), MemPiece::from(b.blob()));
+            if (c < 0) {
+                return kCR_Smaller;
+            }
+            else if (c > 0) {
+                return kCR_Larger;
+            }
+            else {
+                return kCR_Equivalent;
+            }
         }
-    }
     case kNone: case kInfMin: case kInfMax: case kAutoIncr:
         OTS_ASSERT(false)(category());
     }
@@ -917,7 +941,7 @@ CompareResult PrimaryKeyValue::compare(const PrimaryKeyValue& b) const
 }
 
 PrimaryKeyValue::PrimaryKeyValue(int64_t x)
-  : mCategory(kInteger),
+    : mCategory(kInteger),
     mIntValue(x)
 {}
 
@@ -940,7 +964,7 @@ int64_t& PrimaryKeyValue::mutableInteger()
 }
 
 PrimaryKeyValue::PrimaryKeyValue(Str, const string& s)
-  : mCategory(kString),
+    : mCategory(kString),
     mIntValue(0),
     mStrBlobValue(s)
 {}
@@ -964,7 +988,7 @@ string& PrimaryKeyValue::mutableStr()
 }
 
 PrimaryKeyValue::PrimaryKeyValue(Bin, const string& s)
-  : mCategory(kBinary),
+    : mCategory(kBinary),
     mIntValue(0),
     mStrBlobValue(s)
 {}
@@ -988,7 +1012,7 @@ string& PrimaryKeyValue::mutableBlob()
 }
 
 PrimaryKeyValue::PrimaryKeyValue(InfMax)
-  : mCategory(kInfMax),
+    : mCategory(kInfMax),
     mIntValue(0)
 {}
 
@@ -1009,7 +1033,7 @@ void PrimaryKeyValue::setInfMax()
 }
 
 PrimaryKeyValue::PrimaryKeyValue(InfMin)
-  : mCategory(kInfMin),
+    : mCategory(kInfMin),
     mIntValue(0)
 {}
 
@@ -1030,7 +1054,7 @@ void PrimaryKeyValue::setInfMin()
 }
 
 PrimaryKeyValue::PrimaryKeyValue(AutoIncrement)
-  : mCategory(kAutoIncr),
+    : mCategory(kAutoIncr),
     mIntValue(0)
 {}
 
@@ -1073,7 +1097,7 @@ PrimaryKeyColumn::PrimaryKeyColumn()
 {}
 
 PrimaryKeyColumn::PrimaryKeyColumn(const string& name, const PrimaryKeyValue& v)
-  : mName(name),
+    : mName(name),
     mValue(v)
 {}
 
@@ -1105,7 +1129,7 @@ void PrimaryKey::prettyPrint(string& out) const
     }
     out.push_back('{');
     pp::prettyPrint(out, mColumns[0]);
-    for(int64_t i = 1, sz = mColumns.size(); i < sz; ++i) {
+    for (int64_t i = 1, sz = mColumns.size(); i < sz; ++i) {
         out.push_back(',');
         pp::prettyPrint(out, mColumns[i]);
     }
@@ -1119,7 +1143,7 @@ Optional<OTSError> PrimaryKey::validate() const
         e.mutableMessage() = "Primary key is required.";
         return Optional<OTSError>(util::move(e));
     }
-    for(int64_t i = 0, sz = size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = size(); i < sz; ++i) {
         TRY((*this)[i].validate());
     }
     return Optional<OTSError>();
@@ -1132,7 +1156,7 @@ CompareResult PrimaryKey::compare(const PrimaryKey& b) const
     if (asz != bsz) {
         return kCR_Uncomparable;
     }
-    for(int64_t i = 0; i < asz; ++i) {
+    for (int64_t i = 0; i < asz; ++i) {
         CompareResult c = (*this)[i].value().compare(b[i].value());
         if (c != kCR_Equivalent) {
             return c;
@@ -1201,7 +1225,8 @@ void TableOptions::prettyPrint(string& out) const
     if (mTimeToLive.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"TimeToLive\":");
@@ -1210,7 +1235,8 @@ void TableOptions::prettyPrint(string& out) const
     if (mMaxVersions.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"MaxVersions\":");
@@ -1219,7 +1245,8 @@ void TableOptions::prettyPrint(string& out) const
     if (mBloomFilterType.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"BloomFilterType\":");
@@ -1228,7 +1255,8 @@ void TableOptions::prettyPrint(string& out) const
     if (mBlockSize.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"BlockSize\":");
@@ -1237,7 +1265,8 @@ void TableOptions::prettyPrint(string& out) const
     if (mMaxTimeDeviation.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"MaxTimeDeviation\":");
@@ -1346,7 +1375,8 @@ void CapacityUnit::prettyPrint(string& out) const
     if (mWrite.present()) {
         if (first) {
             first = false;
-        } else {
+        }
+        else {
             out.push_back(',');
         }
         out.append("\"Write\":");
@@ -1357,7 +1387,7 @@ void CapacityUnit::prettyPrint(string& out) const
 
 
 AttributeValue::AttributeValue()
-  : mCategory(kNone),
+    : mCategory(kNone),
     mIntValue(0),
     mBoolValue(false),
     mFloatingValue(0)
@@ -1384,7 +1414,7 @@ void AttributeValue::reset()
 
 void AttributeValue::prettyPrint(string& out) const
 {
-    switch(category()) {
+    switch (category()) {
     case kNone:
         out.append("none");
         break;
@@ -1400,7 +1430,8 @@ void AttributeValue::prettyPrint(string& out) const
     case kBoolean:
         if (boolean()) {
             out.append("true");
-        } else {
+        }
+        else {
             out.append("false");
         }
         break;
@@ -1438,10 +1469,12 @@ CompareResult AttributeValue::compare(const AttributeValue& b) const
     if (category() == kNone) {
         if (b.category() == kNone) {
             return kCR_Equivalent;
-        } else {
+        }
+        else {
             return kCR_Uncomparable;
         }
-    } else if (b.category() == kNone) {
+    }
+    else if (b.category() == kNone) {
         return kCR_Uncomparable;
     }
 
@@ -1449,53 +1482,63 @@ CompareResult AttributeValue::compare(const AttributeValue& b) const
         return kCR_Uncomparable;
     }
 
-    switch(category()) {
+    switch (category()) {
     case kInteger:
         if (integer() < b.integer()) {
             return kCR_Smaller;
-        } else if (integer() > b.integer()) {
+        }
+        else if (integer() > b.integer()) {
             return kCR_Larger;
-        } else {
+        }
+        else {
             return kCR_Equivalent;
         }
     case kBoolean: {
-        if (boolean() == b.boolean()) {
-            return kCR_Equivalent;
-        } else if (boolean()) {
-            return kCR_Larger;
-        } else {
-            return kCR_Smaller;
+            if (boolean() == b.boolean()) {
+                return kCR_Equivalent;
+            }
+            else if (boolean()) {
+                return kCR_Larger;
+            }
+            else {
+                return kCR_Smaller;
+            }
         }
-    }
     case kFloatPoint: {
-        if (floatPoint() == b.floatPoint()) {
-            return kCR_Equivalent;
-        } else if (floatPoint() < b.floatPoint()) {
-            return kCR_Smaller;
-        } else {
-            return kCR_Larger;
+            if (floatPoint() == b.floatPoint()) {
+                return kCR_Equivalent;
+            }
+            else if (floatPoint() < b.floatPoint()) {
+                return kCR_Smaller;
+            }
+            else {
+                return kCR_Larger;
+            }
         }
-    }
     case kString: {
-        int c = lexicographicOrder(MemPiece::from(str()), MemPiece::from(b.str()));
-        if (c < 0) {
-            return kCR_Smaller;
-        } else if (c > 0) {
-            return kCR_Larger;
-        } else {
-            return kCR_Equivalent;
+            int c = lexicographicOrder(MemPiece::from(str()), MemPiece::from(b.str()));
+            if (c < 0) {
+                return kCR_Smaller;
+            }
+            else if (c > 0) {
+                return kCR_Larger;
+            }
+            else {
+                return kCR_Equivalent;
+            }
         }
-    }
     case kBinary: {
-        int c = lexicographicOrder(MemPiece::from(blob()), MemPiece::from(b.blob()));
-        if (c < 0) {
-            return kCR_Smaller;
-        } else if (c > 0) {
-            return kCR_Larger;
-        } else {
-            return kCR_Equivalent;
+            int c = lexicographicOrder(MemPiece::from(blob()), MemPiece::from(b.blob()));
+            if (c < 0) {
+                return kCR_Smaller;
+            }
+            else if (c > 0) {
+                return kCR_Larger;
+            }
+            else {
+                return kCR_Equivalent;
+            }
         }
-    }
     case kNone:
         OTS_ASSERT(false)(category());
     }
@@ -1503,7 +1546,7 @@ CompareResult AttributeValue::compare(const AttributeValue& b) const
 }
 
 AttributeValue::AttributeValue(Str, const string& strblob)
-  : mCategory(kString),
+    : mCategory(kString),
     mIntValue(0),
     mStrBlobValue(strblob),
     mBoolValue(false),
@@ -1530,7 +1573,7 @@ string& AttributeValue::mutableStr()
 }
 
 AttributeValue::AttributeValue(Blob, const string& strblob)
-  : mCategory(kBinary),
+    : mCategory(kBinary),
     mIntValue(0),
     mStrBlobValue(strblob),
     mBoolValue(false),
@@ -1557,7 +1600,7 @@ string& AttributeValue::mutableBlob()
 }
 
 AttributeValue::AttributeValue(int64_t v)
-  : mCategory(kInteger),
+    : mCategory(kInteger),
     mIntValue(v),
     mBoolValue(false),
     mFloatingValue(0)
@@ -1583,7 +1626,7 @@ int64_t& AttributeValue::mutableInteger()
 }
 
 AttributeValue::AttributeValue(double v)
-  : mCategory(kFloatPoint),
+    : mCategory(kFloatPoint),
     mIntValue(0),
     mBoolValue(false),
     mFloatingValue(v)
@@ -1609,7 +1652,7 @@ double& AttributeValue::mutableFloatPoint()
 }
 
 AttributeValue::AttributeValue(bool v)
-  : mCategory(kBoolean),
+    : mCategory(kBoolean),
     mIntValue(0),
     mBoolValue(v),
     mFloatingValue(0)
@@ -1636,12 +1679,12 @@ bool& AttributeValue::mutableBoolean()
 
 
 Attribute::Attribute(const string& name, const AttributeValue& val)
-  : mName(name),
+    : mName(name),
     mValue(val)
 {}
 
 Attribute::Attribute(const string& name, const AttributeValue& val, UtcTime ts)
-  : mName(name),
+    : mName(name),
     mValue(val),
     mTimestamp(ts)
 {}
@@ -1737,7 +1780,7 @@ void Row::prettyPrint(string& out) const
 Optional<OTSError> Row::validate() const
 {
     TRY(mPkey.validate());
-    for(int64_t i = 0, sz = mAttrs.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mAttrs.size(); i < sz; ++i) {
         TRY(mAttrs[i].validate());
     }
     return Optional<OTSError>();
@@ -1839,7 +1882,7 @@ Optional<OTSError> Split::validate() const
             "of the same length of the upper bound of that split.";
         return Optional<OTSError>(util::move(e));
     }
-    for(int64_t i = 0, sz = mLowerBound->size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mLowerBound->size(); i < sz; ++i) {
         const PrimaryKeyColumn& lower = (*mLowerBound)[i];
         const PrimaryKeyColumn& upper = (*mUpperBound)[i];
         if (lower.name() != upper.name()) {
@@ -1859,7 +1902,8 @@ Optional<OTSError> Split::validate() const
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
             e.mutableMessage() = "Lower bound of a split must be smaller than the upper bound of that split.";
             return Optional<OTSError>(util::move(e));
-        } else if (c == kCR_Uncomparable) {
+        }
+        else if (c == kCR_Uncomparable) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
             e.mutableMessage() = "Lower bound of a split must be comparable with the upper bound.";
             return Optional<OTSError>(util::move(e));
@@ -1896,7 +1940,7 @@ void Response::prettyPrint(string& out) const
 
 
 CreateTableRequest::CreateTableRequest()
-  : mMeta(),
+    : mMeta(),
     mOptions(),
     mShardSplitPoints()
 {
@@ -1966,11 +2010,11 @@ Optional<OTSError> CreateTableRequest::validate() const
         e.mutableMessage() = "MaxVersions is missing while creating table.";
         return Optional<OTSError>(util::move(e));
     }
-    for(int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
         const PrimaryKey& pk = mShardSplitPoints[i];
         TRY(pk.validate());
     }
-    for(int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
         const PrimaryKey& pk = mShardSplitPoints[i];
         if (pk.size() != 1) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
@@ -1978,7 +2022,7 @@ Optional<OTSError> CreateTableRequest::validate() const
             return Optional<OTSError>(util::move(e));
         }
     }
-    for(int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
         const PrimaryKey& pk = mShardSplitPoints[i];
         OTS_ASSERT(pk.size() >= 1)(pk.size());
         const PrimaryKeyColumn& pkc = pk[0];
@@ -2225,7 +2269,7 @@ Optional<OTSError> DescribeTableResponse::validate() const
 {
     TRY(mMeta.validate());
     TRY(mOptions.validate());
-    for(int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mShardSplitPoints.size(); i < sz; ++i) {
         TRY(mShardSplitPoints[i].validate());
     }
     return Optional<OTSError>();
@@ -2385,7 +2429,7 @@ Optional<OTSError> ComputeSplitsBySizeResponse::validate() const
 {
     TRY(mConsumedCapacity.validate());
     TRY(mSchema.validate());
-    for(int64_t i = 0, sz = mSplits.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mSplits.size(); i < sz; ++i) {
         TRY(mSplits[i].validate());
     }
     return Optional<OTSError>();
@@ -2500,7 +2544,7 @@ void CompositeColumnCondition::prettyPrint(string& out) const
 
 Optional<OTSError> CompositeColumnCondition::validate() const
 {
-    for(int64_t i = 0, sz = mChildren.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mChildren.size(); i < sz; ++i) {
         if (mChildren[i].get() == NULL) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
             e.mutableMessage() = "Children of a composite column condition must be nonnull.";
@@ -2547,7 +2591,7 @@ Optional<OTSError> RowChange::validate() const
         return Optional<OTSError>(util::move(e));
     }
     TRY(mPrimaryKey.validate());
-    for(int64_t i = 0, sz = mPrimaryKey.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mPrimaryKey.size(); i < sz; ++i) {
         if (mPrimaryKey[i].value().isInfinity()) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
             e.mutableMessage() = "Infinity is not allowed in writing a row.";
@@ -2583,7 +2627,7 @@ void RowPutChange::prettyPrint(string& out) const
 Optional<OTSError> RowPutChange::validate() const
 {
     TRY(RowChange::validate());
-    for(int64_t i = 0, sz = mAttrs.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mAttrs.size(); i < sz; ++i) {
         TRY(mAttrs[i].validate());
     }
     return Optional<OTSError>();
@@ -2702,7 +2746,7 @@ Optional<OTSError> QueryCriterion::validate() const
         e.mutableMessage() = "Table name is required.";
         return Optional<OTSError>(util::move(e));
     }
-    for(int64_t i = 0, sz = mColumnsToGet.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mColumnsToGet.size(); i < sz; ++i) {
         if (mColumnsToGet[i].empty()) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
             e.mutableMessage() = "Columns in ColumnsToGet must be nonempty.";
@@ -2882,7 +2926,8 @@ Optional<OTSError> RangeQueryCriterion::validate() const
                 e.mutableMessage() = "Start primary key should be less than or equals to the end in a forward range.";
                 return Optional<OTSError>(util::move(e));
             }
-        } else {
+        }
+        else {
             if (r == kCR_Uncomparable || r == kCR_Smaller) {
                 OTSError e(OTSError::kPredefined_OTSParameterInvalid);
                 e.mutableMessage() = "Start primary key should be greater than or equals to the end in a backward range.";
@@ -2962,7 +3007,7 @@ void GetRangeResponse::prettyPrint(string& out) const
 Optional<OTSError> GetRangeResponse::validate() const
 {
     TRY(mConsumedCapacity.validate());
-    for(int64_t i = 0, sz = mRows.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mRows.size(); i < sz; ++i) {
         TRY(mRows[i].validate());
     }
     if (mNextStart.present()) {
@@ -3014,7 +3059,7 @@ Optional<OTSError> RowUpdateChange::Update::validate() const
     if (mAttrValue.present()) {
         TRY(mAttrValue->validate());
     }
-    switch(mType) {
+    switch (mType) {
     case kPut:
         if (!mAttrValue.present()) {
             OTSError e(OTSError::kPredefined_OTSParameterInvalid);
@@ -3023,27 +3068,27 @@ Optional<OTSError> RowUpdateChange::Update::validate() const
         }
         break;
     case kDelete: {
-        if (mAttrValue.present()) {
-            OTSError e(OTSError::kPredefined_OTSParameterInvalid);
-            e.mutableMessage() = "Attribute value should not be specified for Delete update.";
-            return Optional<OTSError>(util::move(e));
+            if (mAttrValue.present()) {
+                OTSError e(OTSError::kPredefined_OTSParameterInvalid);
+                e.mutableMessage() = "Attribute value should not be specified for Delete update.";
+                return Optional<OTSError>(util::move(e));
+            }
+            break;
         }
-        break;
-    }
     case kDeleteAll: {
-        if (mAttrValue.present()) {
-            OTSError e(OTSError::kPredefined_OTSParameterInvalid);
-            e.mutableMessage() = "Attribute value should not be specified for Delete-All update.";
-            return Optional<OTSError>(util::move(e));
-        }
-        if (mTimestamp.present()) {
-            OTSError e(OTSError::kPredefined_OTSParameterInvalid);
-            e.mutableMessage() = "Timestamp should not be specified for Delete-All update.";
+            if (mAttrValue.present()) {
+                OTSError e(OTSError::kPredefined_OTSParameterInvalid);
+                e.mutableMessage() = "Attribute value should not be specified for Delete-All update.";
+                return Optional<OTSError>(util::move(e));
+            }
+            if (mTimestamp.present()) {
+                OTSError e(OTSError::kPredefined_OTSParameterInvalid);
+                e.mutableMessage() = "Timestamp should not be specified for Delete-All update.";
 
-            return Optional<OTSError>(util::move(e));
+                return Optional<OTSError>(util::move(e));
+            }
+            break;
         }
-        break;
-    }
     }
     return Optional<OTSError>();
 }
@@ -3067,7 +3112,7 @@ void RowUpdateChange::prettyPrint(string& out) const
 Optional<OTSError> RowUpdateChange::validate() const
 {
     TRY(RowChange::validate());
-    for(int64_t i = 0, sz = mUpdates.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mUpdates.size(); i < sz; ++i) {
         TRY(mUpdates[i].validate());
     }
     return Optional<OTSError>();
@@ -3252,7 +3297,7 @@ void MultiPointQueryCriterion::prettyPrint(string& out) const
 Optional<OTSError> MultiPointQueryCriterion::validate() const
 {
     TRY(QueryCriterion::validate());
-    for(int64_t i = 0, sz = mRowKeys.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mRowKeys.size(); i < sz; ++i) {
         TRY(mRowKeys[i].get().validate());
     }
     return Optional<OTSError>();
@@ -3285,7 +3330,7 @@ void BatchGetRowRequest::prettyPrint(string& out) const
 
 Optional<OTSError> BatchGetRowRequest::validate() const
 {
-    for(int64_t i = 0, sz = criteria().size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = criteria().size(); i < sz; ++i) {
         TRY(criteria()[i].validate());
     }
     return Optional<OTSError>();
@@ -3321,7 +3366,7 @@ void BatchGetRowResponse::prettyPrint(string& out) const
 Optional<OTSError> BatchGetRowResponse::validate() const
 {
     TRY(mConsumedCapacity.validate());
-    for(int64_t i = 0, sz = mResults.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mResults.size(); i < sz; ++i) {
         const util::Result<Optional<Row>, OTSError>& result = mResults[i].get();
         if (result.ok()) {
             if (result.okValue().present()) {
@@ -3368,13 +3413,13 @@ void BatchWriteRowRequest::prettyPrint(string& out) const
 
 Optional<OTSError> BatchWriteRowRequest::validate() const
 {
-    for(int64_t i = 0, sz = mPuts.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mPuts.size(); i < sz; ++i) {
         TRY(mPuts[i].get().validate());
     }
-    for(int64_t i = 0, sz = mUpdates.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mUpdates.size(); i < sz; ++i) {
         TRY(mUpdates[i].get().validate());
     }
-    for(int64_t i = 0, sz = mDeletes.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = mDeletes.size(); i < sz; ++i) {
         TRY(mDeletes[i].get().validate());
     }
     return Optional<OTSError>();
@@ -3424,19 +3469,19 @@ void BatchWriteRowResponse::prettyPrint(string& out) const
 Optional<OTSError> BatchWriteRowResponse::validate() const
 {
     TRY(mConsumedCapacity.validate());
-    for(int64_t i = 0, sz = putResults().size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = putResults().size(); i < sz; ++i) {
         const util::Result<Optional<Row>, OTSError>& res = putResults()[i].get();
         if (res.ok() && res.okValue().present()) {
             TRY(res.okValue()->validate());
         }
     }
-    for(int64_t i = 0, sz = updateResults().size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = updateResults().size(); i < sz; ++i) {
         const util::Result<Optional<Row>, OTSError>& res = updateResults()[i].get();
         if (res.ok() && res.okValue().present()) {
             TRY(res.okValue()->validate());
         }
     }
-    for(int64_t i = 0, sz = deleteResults().size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = deleteResults().size(); i < sz; ++i) {
         const util::Result<Optional<Row>, OTSError>& res = deleteResults()[i].get();
         if (res.ok() && res.okValue().present()) {
             TRY(res.okValue()->validate());
