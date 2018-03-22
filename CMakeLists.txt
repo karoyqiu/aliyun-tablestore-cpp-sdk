@@ -9,7 +9,7 @@ find_package(Protobuf REQUIRED)
 
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-find_package(Boost REQUIRED COMPONENTS system chrono thread)
+find_package(Boost REQUIRED COMPONENTS system chrono thread regex)
 
 # 源代码
 add_subdirectory("src")

@@ -41,5 +41,5 @@ target_include_directories(tablestore_util
     PUBLIC "${PROJECT_SOURCE_DIR}/src"
 )
 target_link_libraries(tablestore_util PUBLIC
-    Boost::system Boost::chrono Boost::thread crypto
+    Boost::system Boost::chrono Boost::thread Boost::regex crypto
 )

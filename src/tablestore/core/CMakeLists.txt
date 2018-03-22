@@ -70,3 +70,6 @@ target_include_directories(tablestore_core
 target_link_libraries(tablestore_core PUBLIC tablestore_util
     protobuf::libprotobuf ssl
 )
+if(WIN32)
+    target_link_libraries(tablestore_core PUBLIC rpcrt4.lib)
+endif()
