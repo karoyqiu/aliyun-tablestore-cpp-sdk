@@ -37,8 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/prettyprint.hpp"
 #include <boost/noncopyable.hpp>
 #include <boost/atomic.hpp>
-#include <tr1/functional>
-#include <tr1/memory>
+#include <functional>
 #include <memory>
 #include <string>
 #include <stdint.h>
@@ -74,6 +73,7 @@ class Mutex: private boost::noncopyable
 {
 public:
     explicit Mutex();
+    ~Mutex();
     void lock();
     void unlock();
 
@@ -105,6 +105,7 @@ public:
     };
 
     explicit Semaphore(int64_t init);
+    ~Semaphore();
 
     void post();
     void wait();

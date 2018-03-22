@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/atomic.hpp>
-#include <tr1/memory>
+#include <memory>
 #include <deque>
 
 namespace aliyun {

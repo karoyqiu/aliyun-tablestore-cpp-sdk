@@ -32,9 +32,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TABLESTORE_UTIL_ASSERT_HPP
 #define TABLESTORE_UTIL_ASSERT_HPP
 
+#include <boost/config.hpp>
+
 #include "assert.ipp"
 
-#define OTS_LIKELY(x)   __builtin_expect(!!(x), 1)
+
+#define OTS_LIKELY(x)   BOOST_LIKELY(x)
 
 #define OTS_ASSERT_PINGPONG_A(x)                        \
     OTS_ASSERT_PINGPONG_OP(x, B)

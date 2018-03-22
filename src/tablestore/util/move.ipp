@@ -31,8 +31,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "tablestore/util/metaprogramming.hpp"
-#include <tr1/type_traits>
-#include <tr1/memory>
+
+#include <type_traits>
 #include <memory>
 #include <string>
 

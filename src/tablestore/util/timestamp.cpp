@@ -62,14 +62,14 @@ void fill(string& out, int64_t val, int64_t width)
 {
     deque<char> digits;
     int64_t i = 0;
-    for(; val > 0; ++i, val /= 10) {
+    for (; val > 0; ++i, val /= 10) {
         digits.push_back('0' + (val % 10));
     }
-    for(; i < width; ++i) {
+    for (; i < width; ++i) {
         digits.push_back('0');
     }
 
-    for(; !digits.empty(); digits.pop_back()) {
+    for (; !digits.empty(); digits.pop_back()) {
         out.push_back(digits.back());
     }
 }
@@ -114,7 +114,7 @@ namespace {
 struct TimeComponent
 {
     TimeComponent()
-      : mYear(0), mMonth(0), mDay(0), mHour(0),
+        : mYear(0), mMonth(0), mDay(0), mHour(0),
         mMinute(0), mSec(0), mUsec(0)
     {}
 
@@ -135,8 +135,13 @@ TimeComponent decompose(const UtcTime& tm)
     result.mUsec = t % kUsecPerSec;
     time_t x = q;
     struct tm ti;
+#ifdef _MSC_VER
+    auto r = gmtime_s(&ti, &x);
+    OTS_ASSERT(r == 0).what("time out of range");
+#else
     struct tm* r = gmtime_r(&x, &ti);
     OTS_ASSERT(r != NULL).what("time out of range");
+#endif
     result.mYear = ti.tm_year + 1900;
     result.mMonth = ti.tm_mon + 1;
     result.mDay = ti.tm_mday;

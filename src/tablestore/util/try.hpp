@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define TRY(expr) \
     do {\
-        const typeof(expr)& res36280 = (expr); \
+        const auto &res36280 = (expr); \
         if (res36280.present()) {\
             return res36280; \
         } \

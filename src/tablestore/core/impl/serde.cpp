@@ -31,13 +31,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "serde.hpp"
 #include "../types.hpp"
-#include "../protocol/table_store.pb.h"
-#include "../protocol/table_store_filter.pb.h"
+#include "table_store.pb.h"
+#include "table_store_filter.pb.h"
 #include "../plainbuffer/plain_buffer_builder.hpp"
 #include "tablestore/util/mempiece.hpp"
 #include "tablestore/util/foreach.hpp"
 #include "tablestore/util/try.hpp"
-#include <tr1/memory>
+#include <memory>
 #include <cstdio>
 
 using namespace std;
@@ -83,7 +83,7 @@ PrimaryKeyType toPrimaryKeyType(PB::PrimaryKeyType pb)
     case PB::STRING: return kPKT_String;
     case PB::BINARY: return kPKT_Binary;
     }
-    OTS_ASSERT(false)((int) pb);
+    OTS_ASSERT(false)((int)pb);
     return kPKT_Integer;
 }
 
@@ -122,7 +122,7 @@ void toTableMeta(PB::TableMeta& pb, const TableMeta& api)
 
     // Primary key
     const Schema& schema = api.schema();
-    for(int64_t i = 0, sz = schema.size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = schema.size(); i < sz; ++i) {
         PB::PrimaryKeySchema& pkeySchema = *pb.add_primary_key();
         pkeySchema.set_name(schema[i].name());
         pkeySchema.set_type(toPrimaryKeyType(schema[i].type()));
@@ -136,7 +136,7 @@ void toTableMeta(TableMeta& api, const PB::TableMeta& pb)
 {
     api.mutableTableName() = pb.table_name();
 
-    for(int64_t i = 0, sz = pb.primary_key_size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = pb.primary_key_size(); i < sz; ++i) {
         const PB::PrimaryKeySchema& primaryKeySchema = pb.primary_key(i);
         Schema& schema = api.mutableSchema();
         schema.append().mutableName() = primaryKeySchema.name();
@@ -173,7 +173,8 @@ void toTableOptions(PB::TableOptions& pb, const TableOptions& api)
 {
     if (api.timeToLive().present()) {
         pb.set_time_to_live(api.timeToLive()->toSec());
-    } else {
+    }
+    else {
         pb.set_time_to_live(-1);
     }
     if (api.maxVersions().present()) {
@@ -217,7 +218,8 @@ void toTimeRange(PB::TimeRange& pb, const TimeRange& api)
     int64_t tsEnd = api.end().toMsec();
     if (tsStart + 1 == tsEnd) {
         pb.set_specific_time(tsStart);
-    } else {
+    }
+    else {
         pb.set_start_time(tsStart);
         pb.set_end_time(tsEnd);
     }
@@ -229,7 +231,7 @@ PB::Direction toDirection(RangeQueryCriterion::Direction dir)
     case RangeQueryCriterion::FORWARD: return PB::FORWARD;
     case RangeQueryCriterion::BACKWARD: return PB::BACKWARD;
     }
-    OTS_ASSERT(false)((int) dir);
+    OTS_ASSERT(false)((int)dir);
     return PB::FORWARD;
 }
 
@@ -241,7 +243,7 @@ PB::RowExistenceExpectation toRowExistence(
     case Condition::kExpectExist: return PB::EXPECT_EXIST;
     case Condition::kExpectNotExist: return PB::EXPECT_NOT_EXIST;
     }
-    OTS_ASSERT(false)((int) exp);
+    OTS_ASSERT(false)((int)exp);
     return PB::IGNORE;
 }
 
@@ -251,7 +253,7 @@ PB::ReturnType toReturnType(RowChange::ReturnType rt)
     case RowChange::kRT_None: return PB::RT_NONE;
     case RowChange::kRT_PrimaryKey: return PB::RT_PK;
     }
-    OTS_ASSERT(false)((int) rt);
+    OTS_ASSERT(false)((int)rt);
     return PB::RT_NONE;
 }
 
@@ -263,7 +265,7 @@ PB::FilterType toFilterType(ColumnCondition::Type cct)
     case ColumnCondition::kSingle:
         return PB::FT_SINGLE_COLUMN_VALUE;
     }
-    OTS_ASSERT(false)((int) cct);
+    OTS_ASSERT(false)((int)cct);
     return PB::FT_SINGLE_COLUMN_VALUE;
 }
 
@@ -278,7 +280,7 @@ PB::ComparatorType toComparatorType(
     case SingleColumnCondition::kSmaller: return PB::CT_LESS_THAN;
     case SingleColumnCondition::kSmallerEqual: return PB::CT_LESS_EQUAL;
     }
-    OTS_ASSERT(false)((int) rel);
+    OTS_ASSERT(false)((int)rel);
     return PB::CT_EQUAL;
 }
 
@@ -304,7 +306,7 @@ PB::LogicalOperator toLogicalOperator(CompositeColumnCondition::Operator op)
     case CompositeColumnCondition::kAnd: return PB::LO_AND;
     case CompositeColumnCondition::kOr: return PB::LO_OR;
     }
-    OTS_ASSERT(false)((int) op);
+    OTS_ASSERT(false)((int)op);
     return PB::LO_AND;
 }
 
@@ -312,18 +314,18 @@ string toCompositeCondition(const CompositeColumnCondition& cc)
 {
     PB::CompositeColumnValueFilter pb;
     pb.set_combinator(toLogicalOperator(cc.op()));
-    for(int64_t i = 0, sz = cc.children().size(); i < sz; ++i) {
+    for (int64_t i = 0, sz = cc.children().size(); i < sz; ++i) {
         const ColumnCondition& subcc = *(cc.children()[i]);
         PB::Filter& pbSubFilter = *pb.add_sub_filters();
         pbSubFilter.set_type(toFilterType(subcc.type()));
-        switch(subcc.type()) {
+        switch (subcc.type()) {
         case ColumnCondition::kSingle:
             pbSubFilter.set_filter(toSingleCondition(
-                    dynamic_cast<const SingleColumnCondition&>(subcc)));
+                dynamic_cast<const SingleColumnCondition&>(subcc)));
             break;
         case ColumnCondition::kComposite:
             pbSubFilter.set_filter(toCompositeCondition(
-                    dynamic_cast<const CompositeColumnCondition&>(subcc)));
+                dynamic_cast<const CompositeColumnCondition&>(subcc)));
             break;
         }
     }
@@ -337,14 +339,14 @@ string toFilter(const ColumnCondition& cc)
 {
     PB::Filter pbFilter;
     pbFilter.set_type(toFilterType(cc.type()));
-    switch(cc.type()) {
+    switch (cc.type()) {
     case ColumnCondition::kSingle:
         pbFilter.set_filter(toSingleCondition(
-                dynamic_cast<const SingleColumnCondition&>(cc)));
+            dynamic_cast<const SingleColumnCondition&>(cc)));
         break;
     case ColumnCondition::kComposite:
         pbFilter.set_filter(toCompositeCondition(
-                dynamic_cast<const CompositeColumnCondition&>(cc)));
+            dynamic_cast<const CompositeColumnCondition&>(cc)));
         break;
     }
     string filterStr;
@@ -388,7 +390,7 @@ Optional<OTSError> deserialize(
 }
 
 Serde<kApi_ListTable>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_ListTable>::serialize(
@@ -410,7 +412,7 @@ Optional<OTSError> Serde<kApi_ListTable>::deserialize(
     TRY(parseBody(pb, body));
 
     IVector<string>& tables = api.mutableTables();
-    for(int64_t i = 0; i < pb.table_names_size(); ++i) {
+    for (int64_t i = 0; i < pb.table_names_size(); ++i) {
         tables.append() = pb.table_names(i);
     }
     return Optional<OTSError>();
@@ -418,7 +420,7 @@ Optional<OTSError> Serde<kApi_ListTable>::deserialize(
 
 
 Serde<kApi_CreateTable>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_CreateTable>::serialize(
@@ -435,7 +437,7 @@ Optional<OTSError> Serde<kApi_CreateTable>::serialize(
         if (api.shardSplitPoints().size() > 0) {
             const IVector<PrimaryKey>& shardSplits = api.shardSplitPoints();
             string lastStr = PlainBufferBuilder::SerializePrimaryKeyValue(PrimaryKeyValue::toInfMin());
-            for(int64_t i = 0, sz = shardSplits.size(); i < sz; ++i) {
+            for (int64_t i = 0, sz = shardSplits.size(); i < sz; ++i) {
                 const PrimaryKey& cur = shardSplits[i];
                 PB::PartitionRange& p = *pb.add_partitions();
                 string curStr = PlainBufferBuilder::SerializePrimaryKeyValue(cur[0].value());
@@ -449,7 +451,7 @@ Optional<OTSError> Serde<kApi_CreateTable>::serialize(
             p.set_end(infmaxStr);
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -470,7 +472,7 @@ Optional<OTSError> Serde<kApi_CreateTable>::deserialize(
 
 
 Serde<kApi_DeleteTable>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_DeleteTable>::serialize(
@@ -503,7 +505,7 @@ Optional<OTSError> Serde<kApi_DeleteTable>::deserialize(
 
 
 Serde<kApi_DescribeTable>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_DescribeTable>::serialize(
@@ -544,7 +546,7 @@ Optional<OTSError> Serde<kApi_DescribeTable>::deserialize(
 
         // 5. shard splits
         IVector<PrimaryKey>& splits = api.mutableShardSplitPoints();
-        for(int64_t i = 0, sz = pb.shard_splits_size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = pb.shard_splits_size(); i < sz; ++i) {
             const string& point = pb.shard_splits(i);
             PlainBufferInputStream is(point);
             PlainBufferCodedInputStream codedInputStream(&is);
@@ -553,7 +555,7 @@ Optional<OTSError> Serde<kApi_DescribeTable>::deserialize(
             moveAssign(splits.append(), util::move(row.mutablePrimaryKey()));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -563,7 +565,7 @@ Optional<OTSError> Serde<kApi_DescribeTable>::deserialize(
 
 
 Serde<kApi_UpdateTable>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_UpdateTable>::serialize(
@@ -599,7 +601,7 @@ Optional<OTSError> Serde<kApi_UpdateTable>::deserialize(
 
 
 Serde<kApi_ComputeSplitsBySize>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_ComputeSplitsBySize>::serialize(
@@ -625,7 +627,7 @@ void ComplementPrimaryKey(
 {
     int64_t curSz = pkey.size();
     if (curSz < schema.size()) {
-        for(int64_t i = curSz, sz = schema.size(); i < sz; ++i) {
+        for (int64_t i = curSz, sz = schema.size(); i < sz; ++i) {
             pkey.append() = PrimaryKeyColumn(schema[i].name(), val);
         }
     }
@@ -662,7 +664,7 @@ Optional<OTSError> Serde<kApi_ComputeSplitsBySize>::deserialize(
         const PrimaryKeyValue& infMax = PrimaryKeyValue::toInfMax();
         shared_ptr<PrimaryKey> lower(new PrimaryKey());
         ComplementPrimaryKey(*lower, schema, infMin);
-        for(int64_t i = 0, sz = pb.split_points_size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = pb.split_points_size(); i < sz; ++i) {
             Split& split = api.mutableSplits().append();
             split.mutableLowerBound() = lower;
             {
@@ -685,12 +687,12 @@ Optional<OTSError> Serde<kApi_ComputeSplitsBySize>::deserialize(
 
         // 2.1 locations
         int64_t splitIdx = 0;
-        for(int64_t i = 0, sz = pb.locations_size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = pb.locations_size(); i < sz; ++i) {
             const PB::ComputeSplitPointsBySizeResponse_SplitLocation& pbLoc =
                 pb.locations(i);
             const string& location = pbLoc.location();
             int64_t repeat = pbLoc.repeat();
-            for(; splitIdx < api.splits().size() && repeat > 0; ++splitIdx, --repeat) {
+            for (; splitIdx < api.splits().size() && repeat > 0; ++splitIdx, --repeat) {
                 api.mutableSplits()[splitIdx].mutableLocation() = location;
             }
             if (repeat > 0) {
@@ -705,7 +707,7 @@ Optional<OTSError> Serde<kApi_ComputeSplitsBySize>::deserialize(
             return Optional<OTSError>(util::move(e));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -716,7 +718,7 @@ Optional<OTSError> Serde<kApi_ComputeSplitsBySize>::deserialize(
 
 
 Serde<kApi_PutRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_PutRow>::serialize(
@@ -742,7 +744,7 @@ Optional<OTSError> Serde<kApi_PutRow>::serialize(
             pbCondition.set_column_condition(toFilter(*columnCondition));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -773,7 +775,7 @@ Optional<OTSError> Serde<kApi_PutRow>::deserialize(
             api.mutableRow().reset(util::move(row));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -784,7 +786,7 @@ Optional<OTSError> Serde<kApi_PutRow>::deserialize(
 
 
 Serde<kApi_GetRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_GetRow>::serialize(
@@ -801,7 +803,7 @@ Optional<OTSError> Serde<kApi_GetRow>::serialize(
             PlainBufferBuilder::SerializePrimaryKey(primaryKey));
 
         const IVector<string>& columnsToGet = queryCriterion.columnsToGet();
-        for(int64_t i = 0, sz = columnsToGet.size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = columnsToGet.size(); i < sz; ++i) {
             pb.add_columns_to_get(columnsToGet[i]);
         }
         if (queryCriterion.timeRange().present()) {
@@ -817,7 +819,7 @@ Optional<OTSError> Serde<kApi_GetRow>::serialize(
             pb.set_filter(toFilter(*queryCriterion.filter()));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -848,7 +850,7 @@ Optional<OTSError> Serde<kApi_GetRow>::deserialize(
             api.mutableRow().reset(util::move(row));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -859,7 +861,7 @@ Optional<OTSError> Serde<kApi_GetRow>::deserialize(
 
 
 Serde<kApi_GetRange>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_GetRange>::serialize(
@@ -874,7 +876,7 @@ Optional<OTSError> Serde<kApi_GetRange>::serialize(
         pb.set_direction(toDirection(cri.direction()));
 
         const IVector<string>& columnsToGet = cri.columnsToGet();
-        for(int64_t i = 0, sz = columnsToGet.size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = columnsToGet.size(); i < sz; ++i) {
             pb.add_columns_to_get(columnsToGet[i]);
         }
 
@@ -899,7 +901,7 @@ Optional<OTSError> Serde<kApi_GetRange>::serialize(
         pb.set_exclusive_end_primary_key(
             PlainBufferBuilder::SerializePrimaryKey(cri.exclusiveEnd()));
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -936,7 +938,7 @@ Optional<OTSError> Serde<kApi_GetRange>::deserialize(
             api.mutableNextStart().reset(util::move(nextStart.mutablePrimaryKey()));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -947,7 +949,7 @@ Optional<OTSError> Serde<kApi_GetRange>::deserialize(
 
 
 Serde<kApi_UpdateRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_UpdateRow>::serialize(
@@ -973,7 +975,7 @@ Optional<OTSError> Serde<kApi_UpdateRow>::serialize(
             pbCondition.set_column_condition(toFilter(*columnCondition));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1004,7 +1006,7 @@ Optional<OTSError> Serde<kApi_UpdateRow>::deserialize(
             api.mutableRow().reset(util::move(row));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1015,7 +1017,7 @@ Optional<OTSError> Serde<kApi_UpdateRow>::deserialize(
 
 
 Serde<kApi_DeleteRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool)
+    : mOStream(&mpool)
 {}
 
 Optional<OTSError> Serde<kApi_DeleteRow>::serialize(
@@ -1041,7 +1043,7 @@ Optional<OTSError> Serde<kApi_DeleteRow>::serialize(
             pbCondition.set_column_condition(toFilter(*columnCondition));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1072,7 +1074,7 @@ Optional<OTSError> Serde<kApi_DeleteRow>::deserialize(
             api.mutableRow().reset(util::move(row));
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1083,7 +1085,7 @@ Optional<OTSError> Serde<kApi_DeleteRow>::deserialize(
 
 
 Serde<kApi_BatchGetRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool),
+    : mOStream(&mpool),
     mRequest(NULL)
 {}
 
@@ -1095,17 +1097,17 @@ Optional<OTSError> Serde<kApi_BatchGetRow>::serialize(
     PbRequest pb;
 
     try {
-        for(int64_t i = 0, sz = api.criteria().size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = api.criteria().size(); i < sz; ++i) {
             const MultiPointQueryCriterion& criterion = api.criteria()[i];
             PB::TableInBatchGetRowRequest& table = *pb.add_tables();
             table.set_table_name(criterion.table());
-            for(int64_t j = 0, psz = criterion.rowKeys().size(); j < psz; ++j) {
+            for (int64_t j = 0, psz = criterion.rowKeys().size(); j < psz; ++j) {
                 table.add_primary_key(
                     PlainBufferBuilder::SerializePrimaryKey(
                         criterion.rowKeys()[j].get()));
             }
             if (criterion.columnsToGet().size() > 0) {
-                for(int64_t j = 0, sz = criterion.columnsToGet().size(); j < sz; ++j) {
+                for (int64_t j = 0, sz = criterion.columnsToGet().size(); j < sz; ++j) {
                     table.add_columns_to_get(criterion.columnsToGet()[j]);
                 }
             }
@@ -1120,7 +1122,7 @@ Optional<OTSError> Serde<kApi_BatchGetRow>::serialize(
             }
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1138,14 +1140,16 @@ void mergeConsumedCapacity(CapacityUnit& result, const CapacityUnit& in)
     if (in.read().present()) {
         if (result.read().present()) {
             *result.mutableRead() += *in.read();
-        } else {
+        }
+        else {
             result.mutableRead() = in.read();
         }
     }
     if (in.write().present()) {
         if (result.write().present()) {
             *result.mutableWrite() += *in.write();
-        } else {
+        }
+        else {
             result.mutableWrite() = in.write();
         }
     }
@@ -1182,7 +1186,8 @@ Optional<OTSError> Serde<kApi_BatchGetRow>::deserialize(
                         codedInputStream.ReadRow(&r);
                         row.mutableOkValue().reset(util::move(r));
                     }
-                } else {
+                }
+                else {
                     OTSError error;
                     toError(error, pbRow.error());
                     row.mutableErrValue() = util::move(error);
@@ -1191,19 +1196,19 @@ Optional<OTSError> Serde<kApi_BatchGetRow>::deserialize(
         }
 
         int64_t i = 0;
-        for(int64_t criterionIdx = 0, criterionSz = mRequest->criteria().size();
-            criterionIdx < criterionSz;
-            ++criterionIdx)
+        for (int64_t criterionIdx = 0, criterionSz = mRequest->criteria().size();
+             criterionIdx < criterionSz;
+             ++criterionIdx)
         {
             const MultiPointQueryCriterion& criterion =
                 mRequest->criteria()[criterionIdx];
-            for(int64_t j = 0, sz = criterion.rowKeys().size(); j < sz; ++j, ++i) {
+            for (int64_t j = 0, sz = criterion.rowKeys().size(); j < sz; ++j, ++i) {
                 api.mutableResults()[i].mutableUserData() =
                     criterion.rowKeys()[j].userData();
             }
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1214,7 +1219,7 @@ Optional<OTSError> Serde<kApi_BatchGetRow>::deserialize(
 
 
 Serde<kApi_BatchWriteRow>::Serde(MemPool& mpool)
-  : mOStream(&mpool),
+    : mOStream(&mpool),
     mRequest(NULL)
 {}
 
@@ -1228,19 +1233,19 @@ Optional<OTSError> Serde<kApi_BatchWriteRow>::serialize(
     try {
         {
             const IVector<BatchWriteRowRequest::Put>& rows = api.puts();
-            for(int64_t i = 0, sz = rows.size(); i < sz; ++i) {
+            for (int64_t i = 0, sz = rows.size(); i < sz; ++i) {
                 mIndices[rows[i].get().table()].mPuts.push_back(i);
             }
         }
         {
             const IVector<BatchWriteRowRequest::Update>& rows = api.updates();
-            for(int64_t i = 0, sz = rows.size(); i < sz; ++i) {
+            for (int64_t i = 0, sz = rows.size(); i < sz; ++i) {
                 mIndices[rows[i].get().table()].mUpdates.push_back(i);
             }
         }
         {
             const IVector<BatchWriteRowRequest::Delete>& rows = api.deletes();
-            for(int64_t i = 0, sz = rows.size(); i < sz; ++i) {
+            for (int64_t i = 0, sz = rows.size(); i < sz; ++i) {
                 mIndices[rows[i].get().table()].mDeletes.push_back(i);
             }
         }
@@ -1306,7 +1311,7 @@ Optional<OTSError> Serde<kApi_BatchWriteRow>::serialize(
             }
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_OTSParameterInvalid);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));
@@ -1336,7 +1341,8 @@ void to(
             codedInputStream.ReadRow(&row);
             result.mutableGet().mutableOkValue().reset(util::move(row));
         }
-    } else {
+    }
+    else {
         OTSError error;
         toError(error, pbResponseRow.error());
         result.mutableGet().mutableErrValue() = util::move(error);
@@ -1359,19 +1365,19 @@ Optional<OTSError> Serde<kApi_BatchWriteRow>::deserialize(
             return Optional<OTSError>(util::move(err));
         }
 
-        for(int64_t i = 0, sz = mRequest->puts().size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = mRequest->puts().size(); i < sz; ++i) {
             BatchWriteRowResponse::Result& result = api.mutablePutResults().append();
             result.mutableUserData() = mRequest->puts()[i].userData();
         }
-        for(int64_t i = 0, sz = mRequest->updates().size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = mRequest->updates().size(); i < sz; ++i) {
             BatchWriteRowResponse::Result& result = api.mutableUpdateResults().append();
             result.mutableUserData() = mRequest->updates()[i].userData();
         }
-        for(int64_t i = 0, sz = mRequest->deletes().size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = mRequest->deletes().size(); i < sz; ++i) {
             BatchWriteRowResponse::Result& result = api.mutableDeleteResults().append();
             result.mutableUserData() = mRequest->deletes()[i].userData();
         }
-        for(int64_t i = 0, sz = pb.tables_size(); i < sz; ++i) {
+        for (int64_t i = 0, sz = pb.tables_size(); i < sz; ++i) {
             const PB::TableInBatchWriteRowResponse& pbResponseTable = pb.tables(i);
             const string& tableName = pbResponseTable.table_name();
             Indices::const_iterator it = mIndices.find(tableName);
@@ -1393,29 +1399,29 @@ Optional<OTSError> Serde<kApi_BatchWriteRow>::deserialize(
                 const PB::RowInBatchWriteRowResponse& pbResponseRow =
                     pbResponseTable.rows(pbIdx);
                 to(api.mutableConsumedCapacity(),
-                    api.mutablePutResults()[*it],
-                    pbResponseRow);
+                   api.mutablePutResults()[*it],
+                   pbResponseRow);
                 ++pbIdx;
             }
             FOREACH_ITER(it, idxes.mUpdates) {
                 const PB::RowInBatchWriteRowResponse& pbResponseRow =
                     pbResponseTable.rows(pbIdx);
                 to(api.mutableConsumedCapacity(),
-                    api.mutableUpdateResults()[*it],
-                    pbResponseRow);
+                   api.mutableUpdateResults()[*it],
+                   pbResponseRow);
                 ++pbIdx;
             }
             FOREACH_ITER(it, idxes.mDeletes) {
                 const PB::RowInBatchWriteRowResponse& pbResponseRow =
                     pbResponseTable.rows(pbIdx);
                 to(api.mutableConsumedCapacity(),
-                    api.mutableDeleteResults()[*it],
-                    pbResponseRow);
+                   api.mutableDeleteResults()[*it],
+                   pbResponseRow);
                 ++pbIdx;
             }
         }
     }
-    catch(const OTSClientException& ex) {
+    catch (const OTSClientException& ex) {
         OTSError e(OTSError::kPredefined_CorruptedResponse);
         e.mutableMessage() = ex.GetMessage();
         return Optional<OTSError>(util::move(e));

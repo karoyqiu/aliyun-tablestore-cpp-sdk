@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include "tablestore/util/assert.hpp"
 #include "tablestore/util/move.hpp"
-#include <tr1/functional>
+#include <functional>
 
 namespace aliyun {
 namespace tablestore {

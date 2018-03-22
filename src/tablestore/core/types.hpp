@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/optional.hpp"
 #include "tablestore/util/result.hpp"
 #include "tablestore/util/timestamp.hpp"
-#include <tr1/memory>
+#include <memory>
 #include <string>
 #include <deque>
 

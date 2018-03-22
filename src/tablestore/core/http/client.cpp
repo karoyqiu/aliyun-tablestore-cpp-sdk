@@ -40,8 +40,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/logger.hpp"
 #include "tablestore/util/logging.hpp"
 #include "tablestore/util/foreach.hpp"
-#include <tr1/memory>
-#include <tr1/functional>
+#include <memory>
+#include <functional>
 #include <deque>
 
 using namespace std;

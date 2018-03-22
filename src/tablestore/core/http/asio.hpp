@@ -37,8 +37,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/mempiece.hpp"
 #include "tablestore/util/timestamp.hpp"
 #include "tablestore/util/optional.hpp"
-#include <tr1/functional>
-#include <tr1/memory>
+#include <functional>
+#include <memory>
 #include <deque>
 #include <stdint.h>
 

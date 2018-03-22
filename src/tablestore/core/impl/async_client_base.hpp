@@ -46,8 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/logging.hpp"
 #include "tablestore/util/try.hpp"
 #include <boost/atomic.hpp>
-#include <tr1/functional>
-#include <tr1/memory>
+#include <functional>
 #include <memory>
 #include <string>
 

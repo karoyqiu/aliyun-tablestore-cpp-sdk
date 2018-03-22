@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/random.hpp"
 #include "tablestore/util/try.hpp"
 #include "tablestore/util/assert.hpp"
-#include <tr1/memory>
+#include <memory>
 #include <cmath>
 #include <cstdio>
 #include <stdint.h>

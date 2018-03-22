@@ -34,7 +34,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "tablestore/util/optional.hpp"
-#include <tr1/type_traits>
+#include <type_traits>
 
 namespace aliyun {
 namespace tablestore {

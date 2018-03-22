@@ -177,7 +177,7 @@ public:
 
         MutableMemPiece mutablePiece()
         {
-            return MutableMemPiece(mContent, Size);
+            return MutableMemPiece(static_cast<void *>(mContent), static_cast<int64_t>(Size));
         }
     };
 

@@ -36,7 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/try.hpp"
 #include "tablestore/util/threading.hpp"
 #include <boost/ref.hpp>
-#include <tr1/functional>
+#include <functional>
 
 using namespace std;
 using namespace std::tr1;
@@ -60,7 +60,8 @@ void callback(
 {
     if (inErr.present()) {
         moveAssign(outErr, util::move(inErr));
-    } else {
+    }
+    else {
         moveAssign(outResp, util::move(inResp));
     }
     sem.post();
@@ -81,10 +82,10 @@ Optional<OTSError> go(
     Optional<OTSError> err;
     function<void(Optional<OTSError>&, Response&)> cb =
         bind(&callback<kAction>,
-            boost::ref(sem),
-            boost::ref(err),
-            boost::ref(resp),
-            _1, _2);
+             boost::ref(sem),
+             boost::ref(err),
+             boost::ref(resp),
+             _1, _2);
     auto_ptr<Context> ctx(new Context(ac, tracker));
     TRY(ctx->build(req, cb));
     ctx.release()->issue();
@@ -95,11 +96,11 @@ Optional<OTSError> go(
 } // namespace
 
 SyncClient::SyncClient(impl::AsyncClientBase* ac)
-  : mAsyncClient(ac)
+    : mAsyncClient(ac)
 {}
 
 SyncClient::SyncClient(AsyncClient& client)
-  : mAsyncClient(client.mAsyncClient)
+    : mAsyncClient(client.mAsyncClient)
 {}
 
 Optional<OTSError> SyncClient::listTable(

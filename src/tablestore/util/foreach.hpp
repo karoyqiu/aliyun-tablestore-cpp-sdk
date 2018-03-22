@@ -33,6 +33,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TABLESTORE_FOREACH_HPP
 
 #define FOREACH_ITER(it, container)                              \
-    for(typeof((container).begin()) it((container).begin()); it != (container).end(); ++it)
+    for(auto it = (container).begin(); it != (container).end(); ++it)
 
 #endif /* TABLESTORE_FOREACH_HPP */

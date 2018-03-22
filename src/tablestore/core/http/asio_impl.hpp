@@ -42,7 +42,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/seq_gen.hpp"
 #include <boost/atomic.hpp>
 #include <boost/asio.hpp>
-#include <tr1/memory>
+#include <memory>
 #include <deque>
 #include <stdint.h>
 

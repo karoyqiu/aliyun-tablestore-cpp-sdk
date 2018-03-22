@@ -46,7 +46,7 @@ typedef aliyun::tablestore::util::Semaphore Semaphore;
 void PrettyPrinter<Semaphore::Status, Semaphore::Status>::operator()(
     string& out, Semaphore::Status st) const
 {
-    switch(st) {
+    switch (st) {
     case Semaphore::kInTime:
         out.append("Semaphore::kInTime");
         break;
@@ -69,7 +69,7 @@ class Thread
 {
 public:
     explicit Thread(function<void()> fn)
-      : mImpl(fn)
+        : mImpl(fn)
     {}
 
     ~Thread()
@@ -87,7 +87,7 @@ private:
 } // namespace impl
 
 Thread::Thread(const function<void()>& fn)
-  : mImpl(new impl::Thread(fn))
+    : mImpl(new impl::Thread(fn))
 {}
 
 Thread::Thread()
@@ -102,7 +102,7 @@ Thread& Thread::operator=(const MoveHolder<Thread>& a)
 {
     OTS_ASSERT(mImpl.get() == NULL)
         .what("Being move target of a thread delegate"
-            " requires no thread it delegated to.");
+              " requires no thread it delegated to.");
     mImpl.reset(a->mImpl.release());
     return *this;
 }
@@ -121,7 +121,7 @@ void Thread::join()
 
 namespace impl {
 
-class Mutex: private boost::noncopyable
+class Mutex : private boost::noncopyable
 {
 public:
     void lock()
@@ -141,7 +141,10 @@ private:
 } // namespace impl
 
 Mutex::Mutex()
-  : mMutex(new impl::Mutex())
+    : mMutex(new impl::Mutex())
+{}
+
+Mutex::~Mutex()
 {}
 
 void Mutex::lock()
@@ -155,7 +158,7 @@ void Mutex::unlock()
 }
 
 ScopedLock::ScopedLock(Mutex& mutex)
-  : mMutex(mutex)
+    : mMutex(mutex)
 {
     mMutex.lock();
 }
@@ -167,11 +170,11 @@ ScopedLock::~ScopedLock()
 
 namespace impl {
 
-class Semaphore: private boost::noncopyable
+class Semaphore : private boost::noncopyable
 {
 public:
     explicit Semaphore(int64_t init)
-      : mAvailable(init)
+        : mAvailable(init)
     {}
 
     void post()
@@ -186,7 +189,7 @@ public:
     void wait()
     {
         boost::unique_lock<boost::mutex> lck(mMutex);
-        while(mAvailable == 0) {
+        while (mAvailable == 0) {
             mCondVar.wait(lck);
         }
         --mAvailable;
@@ -195,9 +198,9 @@ public:
     util::Semaphore::Status waitFor(Duration d)
     {
         boost::unique_lock<boost::mutex> lck(mMutex);
-        while(mAvailable == 0) {
+        while (mAvailable == 0) {
             boost::cv_status res = mCondVar.wait_for(lck,
-                boost::chrono::microseconds(d.toUsec()));
+                                                     boost::chrono::microseconds(d.toUsec()));
             if (res == boost::cv_status::timeout) {
                 return util::Semaphore::kTimeout;
             }
@@ -215,7 +218,10 @@ private:
 } // namespace impl
 
 Semaphore::Semaphore(int64_t init)
-  : mImpl(new impl::Semaphore(init))
+    : mImpl(new impl::Semaphore(init))
+{}
+
+Semaphore::~Semaphore()
 {}
 
 void Semaphore::post()
@@ -240,7 +246,7 @@ class ActionQueue
 {
 public:
     explicit ActionQueue()
-      : mActions(0)
+        : mActions(0)
     {}
     ~ActionQueue();
 
@@ -261,12 +267,13 @@ private:
 
 ActionQueue::~ActionQueue()
 {
-    for(;;) {
+    for (;;) {
         Item* item = NULL;
         bool ret = mActions.pop(item);
         if (ret) {
             delete item;
-        } else {
+        }
+        else {
             break;
         }
     }
@@ -297,7 +304,7 @@ bool ActionQueue::pop(Actor::Action* act)
 } // namespace impl
 
 Actor::Actor()
-  : mSem(0),
+    : mSem(0),
     mStopper(false),
     mScript(new impl::ActionQueue())
 {
@@ -324,23 +331,24 @@ void Actor::pushBack(const Action& act)
 void Actor::acting()
 {
     deque<Action> batch;
-    for(;;) {
+    for (;;) {
         mSem.wait();
         if (mStopper.load(boost::memory_order_acquire)) {
             break;
         }
 
         batch.clear();
-        for(int64_t i = 0; i < kMaxBatchSize; ++i) {
+        for (int64_t i = 0; i < kMaxBatchSize; ++i) {
             Action act;
             bool ret = mScript->pop(&act);
             if (!ret) {
                 break;
-            } else {
+            }
+            else {
                 batch.push_back(act);
             }
         }
-        for(; !batch.empty(); batch.pop_front()) {
+        for (; !batch.empty(); batch.pop_front()) {
             const Action& act = batch.front();
             act();
         }

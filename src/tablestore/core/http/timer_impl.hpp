@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tablestore/util/threading.hpp"
 #include <boost/asio.hpp>
 #include <boost/atomic.hpp>
-#include <tr1/memory>
+#include <memory>
 #include <deque>
 #include <map>
 #include <stdint.h>

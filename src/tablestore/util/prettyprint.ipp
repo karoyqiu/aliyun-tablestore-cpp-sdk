@@ -31,15 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "metaprogramming.hpp"
 
-#if __cplusplus < 201103L
-#include <tr1/type_traits>
-#include <tr1/tuple>
-#include <stdint.h>
-#else
 #include <type_traits>
 #include <tuple>
 #include <cstdint>
-#endif
 
 namespace pp {
 namespace impl {
