@@ -15,7 +15,6 @@
     http/connection_impl.hpp
     http/response_reader.cpp
     http/response_reader.hpp
-    http/SConscript
     http/timer_impl.cpp
     http/timer_impl.hpp
     http/types.cpp
@@ -33,7 +32,6 @@
     impl/ots_exception.hpp
     impl/ots_helper.cpp
     impl/ots_helper.hpp
-    impl/SConscript
     impl/serde.cpp
     impl/serde.hpp
     impl/sync_client.cpp
@@ -59,16 +57,25 @@
     types.hpp
 )
 protobuf_generate_cpp(proto_srcs proto_hdrs protocol/table_store.proto protocol/table_store_filter.proto)
-target_sources(tablestore_core PRIVATE ${proto_srcs} ${proto_hdrs})
-set_source_files_properties(${proto_srcs} ${proto_hdrs}
+
+set(major "4")
+set(minor "5")
+set(revision "1")
+set(language "cpp98")
+set(platform "${CMAKE_SYSTEM}")
+set(architecture "${CMAKE_SYSTEM_PROCESSOR}")
+configure_file(impl/buildinfo.cpp.cmake.in buildinfo.cpp @ONLY)
+
+target_sources(tablestore_core PRIVATE ${proto_srcs} ${proto_hdrs} "${CMAKE_CURRENT_BINARY_DIR}/buildinfo.cpp")
+set_source_files_properties(${proto_srcs} ${proto_hdrs} "${CMAKE_CURRENT_BINARY_DIR}/buildinfo.cpp"
     PROPERTIES SKIP_AUTOGEN ON
 )
 target_include_directories(tablestore_core
-    INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}"
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
     PRIVATE "${Protobuf_INCLUDE_DIRS}" "${CMAKE_CURRENT_BINARY_DIR}"
 )
 target_link_libraries(tablestore_core PUBLIC tablestore_util
-    protobuf::libprotobuf ssl
+    protobuf::libprotobuf decrepit
 )
 if(WIN32)
     target_link_libraries(tablestore_core PUBLIC rpcrt4.lib)
