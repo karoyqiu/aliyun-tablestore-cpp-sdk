@@ -70,6 +70,7 @@ target_sources(tablestore_core PRIVATE ${proto_srcs} ${proto_hdrs} "${CMAKE_CURR
 set_source_files_properties(${proto_srcs} ${proto_hdrs} "${CMAKE_CURRENT_BINARY_DIR}/buildinfo.cpp"
     PROPERTIES SKIP_AUTOGEN ON
 )
+target_compile_definitions(tablestore_core PUBLIC BOOST_ASIO_ENABLE_OLD_SERVICES)
 target_include_directories(tablestore_core
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
     PRIVATE "${Protobuf_INCLUDE_DIRS}" "${CMAKE_CURRENT_BINARY_DIR}"
